@@ -34,6 +34,6 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: Build and analyze
         env:
-          SONAR_TOKEN: ${{ sqp_4192adb6ad8a8bc034af37b5216e3e4bc67143e3 }}
-          SONAR_HOST_URL: ${{ http://54.175.241.93:9000 }}
+          SONAR_TOKEN: ${{ secret.sonarToken }}
+          SONAR_HOST_URL: ${{ secret.sonarHost }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=ohm -Dsonar.projectName='ohm'
