@@ -1,34 +1,39 @@
-name: SonarQube Analysis
+name: Build
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches:
+      - main
+
 
 jobs:
-  sonar:
+  build:
+    name: Build and analyze
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Java 17
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
           java-version: 17
-
-      - name: Cache Maven
+          distribution: 'zulu' # Alternative distribution options are available.
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Cache Maven packages
         uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-
-      - name: Run SonarQube Scan
-        run: mvn clean verify sonar:sonar
+          restore-keys: ${{ runner.os }}-m2
+      - name: Build and analyze
         env:
-          SONAR_HOST_URL: http://54.175.241.93:9000
           SONAR_TOKEN: ${{ sqp_4192adb6ad8a8bc034af37b5216e3e4bc67143e3 }}
+          SONAR_HOST_URL: ${{ http://54.175.241.93:9000 }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=ohm -Dsonar.projectName='ohm'
